@@ -128,3 +128,7 @@ ai-photo-watermark-remover/
 ---
 
 ⭐ 如果这个项目对你有帮助，请给个 Star！
+
+## 🎯 Roadmap
+- [ ] 支持视频水印去除
+- [ ] 训练专用水印检测模型
