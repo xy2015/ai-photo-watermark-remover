@@ -1,0 +1,22 @@
+# AI 智能清理照片水印 - 依赖列表
+# 安装: pip install -r requirements.txt
+
+# 核心依赖
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# 深度学习 (可选，未安装时使用 OpenCV 传统方法)
+# torch>=2.0.0
+# torchvision>=0.15.0
+# ultralytics>=8.0.0  # YOLOv8
+
+# Web 界面
+gradio>=3.40.0
+
+# 工具
+Pillow>=10.0.0
+tqdm>=4.65.0
+
+# 开发/测试
+pytest>=7.4.0
+pytest-cov>=4.1.0
