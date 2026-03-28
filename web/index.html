@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 去水印 - 智能图片水印去除工具</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-inner">
+                <a href="#" class="logo" id="logoLink">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 3l1.912 5.813L20 10l-6.088 1.187L12 17l-1.912-5.813L4 10l6.088-1.187L12 3z"/>
+                        </svg>
+                    </div>
+                    <span class="logo-text">AI 去水印</span>
+                </a>
+                <nav class="nav" id="mainNav">
+                    <a href="#" class="nav-link active" data-page="home">首页</a>
+                    <a href="#" class="nav-link" data-page="feedback">问题反馈</a>
+                    <a href="#" class="nav-link" data-page="privacy">隐私政策</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Landing Page -->
+            <div class="landing-page" id="landingPage">
+                <!-- Hero Section -->
+                <section class="hero-section">
+                    <div class="hero-content">
+                        <h1 class="hero-title">AI 智能去水印</h1>
+                        <p class="hero-subtitle">
+                            使用先进的 AI 技术，一键去除图片中的水印、文字、LOGO
+                            <br>
+                            保持原图质量，快速高效，隐私安全
+                        </p>
+                    </div>
+
+                    <!-- Upload Area -->
+                    <div class="upload-container">
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file" id="fileInput" accept="image/*" hidden>
+                            <div class="upload-content">
+                                <div class="upload-icon-wrapper">
+                                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <path d="M21 15l-5-5L5 21"/>
+                                    </svg>
+                                </div>
+                                <div class="upload-text">
+                                    <p class="upload-title">点击或拖拽图片到此处</p>
+                                    <p class="upload-subtitle">支持 JPG、PNG、WEBP 格式，最大 10MB</p>
+                                </div>
+                                <button class="btn btn-primary btn-large upload-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                                    </svg>
+                                    选择图片
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features -->
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 3l1.912 5.813L20 10l-6.088 1.187L12 17l-1.912-5.813L4 10l6.088-1.187L12 3z"/>
+                                </svg>
+                            </div>
+                            <div class="feature-content">
+                                <h3 class="feature-title">AI 智能识别</h3>
+                                <p class="feature-desc">自动检测并精准定位水印、文字、LOGO 等元素，智能修复图片内容</p>
+                            </div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                </svg>
+                            </div>
+                            <div class="feature-content">
+                                <h3 class="feature-title">快速处理</h3>
+                                <p class="feature-desc">强大的 AI 算法，秒级完成图片处理，无需漫长等待</p>
+                            </div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                            </div>
+                            <div class="feature-content">
+                                <h3 class="feature-title">隐私保护</h3>
+                                <p class="feature-desc">所有处理在浏览器本地完成，图片不上传服务器，100% 保护隐私</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Before/After Comparison -->
+                <section class="comparison-section">
+                    <div class="section-header">
+                        <h2 class="section-title">效果对比</h2>
+                        <p class="section-subtitle">AI 智能去水印，保持原图质量</p>
+                    </div>
+                    <div class="comparison-grid">
+                        <div class="comparison-card">
+                            <div class="comparison-header">
+                                <h3>处理前</h3>
+                            </div>
+                            <div class="comparison-image before">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <path d="M21 15l-5-5L5 21"/>
+                                </svg>
+                                <p>原始图片（含水印）</p>
+                            </div>
+                        </div>
+                        <div class="comparison-card after">
+                            <div class="comparison-badge">AI 处理后</div>
+                            <div class="comparison-header">
+                                <h3>处理后</h3>
+                            </div>
+                            <div class="comparison-image">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M12 3l1.912 5.813L20 10l-6.088 1.187L12 17l-1.912-5.813L4 10l6.088-1.187L12 3z"/>
+                                </svg>
+                                <p>完美去除水印</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- How it works -->
+                <section class="how-it-works-section">
+                    <div class="section-header">
+                        <h2 class="section-title">如何使用</h2>
+                        <p class="section-subtitle">三步轻松完成图片去水印</p>
+                    </div>
+                    <div class="steps-grid">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <h3 class="step-title">上传图片</h3>
+                            <p class="step-desc">点击或拖拽上传需要处理的图片</p>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <h3 class="step-title">标记水印</h3>
+                            <p class="step-desc">使用画笔工具标记需要去除的区域</p>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <h3 class="step-title">导出结果</h3>
+                            <p class="step-desc">一键导出处理后的高清图片</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Feedback Page -->
+            <div class="feedback-page hidden" id="feedbackPage">
+                <div class="page-container">
+                    <!-- Header -->
+                    <div class="page-header">
+                        <div class="page-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </div>
+                        <h1 class="page-title">问题反馈</h1>
+                        <p class="page-subtitle">遇到问题或有建议？请告诉我们，我们会尽快回复您</p>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div class="feedback-success hidden" id="feedbackSuccess">
+                        <div class="success-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <h2 class="success-title">提交成功！</h2>
+                        <p class="success-desc">感谢您的反馈，我们已收到您的消息，将在 1-2 个工作日内回复您</p>
+                        <button class="btn btn-primary" id="continueFeedbackBtn">继续反馈</button>
+                    </div>
+
+                    <!-- Feedback Form -->
+                    <div class="feedback-form-wrapper" id="feedbackFormWrapper">
+                        <form class="feedback-form" id="feedbackForm">
+                            <div class="form-group">
+                                <label class="form-label">姓名 <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="feedbackName" placeholder="请输入您的姓名" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">邮箱 <span class="required">*</span></label>
+                                <input type="email" class="form-input" id="feedbackEmail" placeholder="your@email.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">反馈类型 <span class="required">*</span></label>
+                                <select class="form-select" id="feedbackCategory" required>
+                                    <option value="bug">Bug 报告</option>
+                                    <option value="feature">功能建议</option>
+                                    <option value="question">使用问题</option>
+                                    <option value="other">其他</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">详细描述 <span class="required">*</span></label>
+                                <textarea class="form-textarea" id="feedbackMessage" placeholder="请详细描述您遇到的问题或建议..." rows="6" required></textarea>
+                                <p class="form-hint">请提供尽可能详细的信息，以便我们更好地帮助您</p>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-large btn-full" id="submitFeedbackBtn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
+                                <span>提交反馈</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Contact Info -->
+                    <div class="contact-grid">
+                        <div class="contact-card">
+                            <h3>邮件联系</h3>
+                            <p class="contact-desc">也可以直接发送邮件到：</p>
+                            <a href="mailto:support@aiwatermark.com" class="contact-link">support@aiwatermark.com</a>
+                        </div>
+                        <div class="contact-card">
+                            <h3>工作时间</h3>
+                            <p class="contact-desc">周一至周五：9:00 - 18:00<br>我们会在 1-2 个工作日内回复</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ -->
+                    <div class="faq-section">
+                        <h2 class="faq-title">常见问题</h2>
+                        <div class="faq-list">
+                            <details class="faq-item">
+                                <summary class="faq-question">如何上传图片？</summary>
+                                <p class="faq-answer">在首页点击上传区域或直接拖拽图片文件到上传区域即可。支持 JPG、PNG、WEBP 格式。</p>
+                            </details>
+                            <details class="faq-item">
+                                <summary class="faq-question">我的图片会被上传到服务器吗？</summary>
+                                <p class="faq-answer">不会。所有图片处理都在您的浏览器本地完成，我们不会上传、存储或访问您的图片。</p>
+                            </details>
+                            <details class="faq-item">
+                                <summary class="faq-question">支持什么格式的图片？</summary>
+                                <p class="faq-answer">目前支持 JPG、PNG、WEBP 格式的图片，单个文件最大 10MB。</p>
+                            </details>
+                            <details class="faq-item">
+                                <summary class="faq-question">处理后的图片质量会降低吗？</summary>
+                                <p class="faq-answer">我们的 AI 算法会尽可能保持原图质量，在去除水印的同时智能修复背景。</p>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Policy Page -->
+            <div class="privacy-page hidden" id="privacyPage">
+                <div class="page-container">
+                    <!-- Header -->
+                    <div class="page-header">
+                        <div class="page-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                        </div>
+                        <h1 class="page-title">隐私政策</h1>
+                        <p class="page-subtitle">最后更新日期：2026年3月27日</p>
+                    </div>
+
+                    <!-- Key Points -->
+                    <div class="privacy-highlights">
+                        <div class="highlight-card">
+                            <svg class="highlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <h3 class="highlight-title">本地处理</h3>
+                            <p class="highlight-desc">所有图片在浏览器本地处理</p>
+                        </div>
+                        <div class="highlight-card">
+                            <svg class="highlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <h3 class="highlight-title">无数据收集</h3>
+                            <p class="highlight-desc">不上传、不存储您的图片</p>
+                        </div>
+                        <div class="highlight-card">
+                            <svg class="highlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                            </svg>
+                            <h3 class="highlight-title">隐私优先</h3>
+                            <p class="highlight-desc">您的隐私是我们的首要任务</p>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="privacy-content">
+                        <section class="privacy-section">
+                            <h2 class="section-heading">1. 信息收集</h2>
+                            <p>我们重视您的隐私。AI 去水印工具采用前端技术，所有图片处理均在您的浏览器本地完成，我们不会上传、存储或访问您的图片文件。</p>
+                            <p><strong>我们不收集的信息：</strong></p>
+                            <ul>
+                                <li>您上传或处理的图片文件</li>
+                                <li>图片中的任何内容或元数据</li>
+                                <li>您的个人身份信息</li>
+                                <li>您的设备信息或浏览器指纹</li>
+                            </ul>
+                        </section>
+
+                        <section class="privacy-section">
+                            <h2 class="section-heading">2. 信息使用</h2>
+                            <p>由于我们不收集任何个人信息或图片数据，因此不存在信息使用的问题。所有处理过程都在您的设备上完成，处理后的图片仅保存在您的本地存储中。</p>
+                            <p>我们可能会收集匿名的使用统计数据（如页面访问量、功能使用频率等），但这些数据不包含任何可识别个人身份的信息。</p>
+                        </section>
+
+                        <section class="privacy-section">
+                            <h2 class="section-heading">3. 数据安全</h2>
+                            <p>我们采用行业标准的安全措施来保护我们的网站和服务。由于图片处理在本地完成，您的图片数据始终在您的控制之下，不会通过网络传输到我们的服务器。</p>
+                            <p><strong>安全措施：</strong></p>
+                            <ul>
+                                <li>HTTPS 加密连接</li>
+                                <li>无服务器端数据存储</li>
+                                <li>定期安全审计</li>
+                                <li>开源代码可审查</li>
+                            </ul>
+                        </section>
+
+                        <section class="privacy-section">
+                            <h2 class="section-heading">4. Cookie 使用</h2>
+                            <p>我们使用必要的 Cookie 来确保网站的基本功能正常运行。这些 Cookie 不包含任何个人信息，仅用于：</p>
+                            <ul>
+                                <li>保持用户界面设置（如主题偏好）</li>
+                                <li>记录匿名使用统计</li>
+                                <li>确保网站安全性</li>
+                            </ul>
+                            <p>您可以通过浏览器设置管理或禁用 Cookie，但这可能会影响某些功能的使用。</p>
+                        </section>
+
+                        <section class="privacy-section">
+                            <h2 class="section-heading">5. 第三方服务</h2>
+                            <p>我们可能使用第三方服务来提供网站分析和性能监控。这些服务可能会收集匿名的使用数据，但不会访问您的图片文件或个人信息。</p>
+                            <p>我们使用的第三方服务包括：</p>
+                            <ul>
+                                <li>网站分析工具（用于了解网站使用情况）</li>
+                                <li>内容分发网络（CDN，用于提高网站加载速度）</li>
+                            </ul>
+                        </section>
+
+                        <section class="privacy-section">
+                            <h2 class="section-heading">6. 儿童隐私</h2>
+                            <p>我们的服务面向所有年龄段的用户。由于我们不收集任何个人信息，因此不存在儿童隐私保护的特殊问题。我们建议家长和监护人监督未成年人使用互联网服务。</p>
+                        </section>
+
+                        <section class="privacy-section">
+                            <h2 class="section-heading">7. 隐私政策更新</h2>
+                            <p>我们可能会不时更新本隐私政策。更新后的政策将在本页面发布，并注明最后更新日期。重大变更将通过网站通知的方式告知用户。</p>
+                        </section>
+
+                        <section class="privacy-section">
+                            <h2 class="section-heading">8. 联系我们</h2>
+                            <p>如果您对本隐私政策有任何疑问或建议，请通过以下方式联系我们：</p>
+                            <div class="contact-info-box">
+                                <p><strong>电子邮件：</strong> privacy@aiwatermark.com</p>
+                                <p><strong>工作时间：</strong> 周一至周五 9:00-18:00</p>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="privacy-cta">
+                        <svg class="cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <h3 class="cta-title">隐私保护承诺</h3>
+                        <p class="cta-desc">我们承诺保护您的隐私，所有图片处理均在本地完成，绝不上传到服务器</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editor Page -->
+            <div class="editor-page hidden" id="editorPage">
+                <!-- Canvas Area -->
+                <div class="canvas-area">
+                    <!-- Toolbar -->
+                    <div class="toolbar">
+                        <div class="toolbar-left">
+                            <button class="icon-btn" id="undoBtn" title="撤销" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 7v6h6M3 13c0-4.97 4.03-9 9-9s9 4.03 9 9-4.03 9-9 9a9 9 0 0 1-6.36-2.64"/>
+                                </svg>
+                            </button>
+                            <button class="icon-btn" id="redoBtn" title="重做" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 7v6h-6M21 13c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9a9 9 0 0 0 6.36-2.64"/>
+                                </svg>
+                            </button>
+                            <div class="toolbar-divider"></div>
+                            <button class="icon-btn" id="resetBtn" title="重置">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                    <path d="M3 3v5h5"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="icon-btn" id="zoomOutBtn" title="缩小">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="M21 21l-4.35-4.35M8 11h6"/>
+                                </svg>
+                            </button>
+                            <span class="zoom-value" id="zoomValue">100%</span>
+                            <button class="icon-btn" id="zoomInBtn" title="放大">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/>
+                                </svg>
+                            </button>
+                            <button class="icon-btn" id="fitScreenBtn" title="适应屏幕">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Container -->
+                    <div class="canvas-container">
+                        <div class="canvas-wrapper" id="canvasWrapper">
+                            <canvas id="imageCanvas"></canvas>
+                            <div class="selection-overlay" id="selectionOverlay"></div>
+                            <!-- Processing Overlay -->
+                            <div class="processing-overlay hidden" id="processingOverlay">
+                                <svg class="processing-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 3l1.912 5.813L20 10l-6.088 1.187L12 17l-1.912-5.813L4 10l6.088-1.187L12 3z"/>
+                                </svg>
+                                <p class="processing-text">AI 正在处理中...</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill"></div>
+                                </div>
+                                <p class="progress-text" id="progressText">0%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Status -->
+                    <div class="status-bar">
+                        <span class="status-text">就绪</span>
+                        <button class="status-link" id="compareBtn">显示对比</button>
+                    </div>
+                </div>
+
+                <!-- Control Panel -->
+                <div class="control-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">工具面板</h2>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="panel-tabs">
+                        <div class="tabs-wrapper">
+                            <button class="tab-btn active" data-tab="auto">智能去水印</button>
+                            <button class="tab-btn" data-tab="manual">手动去水印</button>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="panel-content">
+                        <!-- Auto Mode -->
+                        <div class="tab-content active" id="autoTab">
+                            <div class="info-box">
+                                <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8L19 13M17.8 6.2L19 5M3 21l9-9M12.2 6.2L11 5"/>
+                                </svg>
+                                <div class="info-content">
+                                    <h3 class="info-title">快捷去水印</h3>
+                                    <p class="info-desc">选择水印位置，快速去除图片中的水印、文字和 LOGO</p>
+                                </div>
+                            </div>
+
+                            <div class="options-group">
+                                <h3 class="options-title">选择水印位置</h3>
+                                <div class="region-selector">
+                                    <button class="region-btn" data-region="top-left">左上角</button>
+                                    <button class="region-btn" data-region="top-right">右上角</button>
+                                    <button class="region-btn" data-region="bottom-left">左下角</button>
+                                    <button class="region-btn active" data-region="bottom-right">右下角</button>
+                                    <button class="region-btn" data-region="custom">自定义（切换到手动）</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manual Mode -->
+                        <div class="tab-content hidden" id="manualTab">
+                            <div class="info-box">
+                                <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                                    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                                </svg>
+                                <div class="info-content">
+                                    <h3 class="info-title">手动标记模式</h3>
+                                    <p class="info-desc">使用画笔工具手动标记需要去除的区域</p>
+                                </div>
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <label class="slider-label">画笔大小</label>
+                                    <span class="slider-value" id="brushSizeValue">20px</span>
+                                </div>
+                                <input type="range" class="slider" id="brushSize" min="5" max="100" value="20" step="5">
+                            </div>
+
+                            <div class="tools-group">
+                                <h3 class="options-title">画笔工具</h3>
+                                <div class="tools-grid">
+                                    <button class="tool-btn active" id="markTool">标记画笔</button>
+                                    <button class="tool-btn" id="eraserTool">橡皮擦</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="panel-actions">
+                        <button class="btn btn-primary btn-large btn-full" id="processBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3l1.912 5.813L20 10l-6.088 1.187L12 17l-1.912-5.813L4 10l6.088-1.187L12 3z"/>
+                            </svg>
+                            <span>开始去水印</span>
+                        </button>
+                        <button class="btn btn-secondary btn-large btn-full" id="downloadBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                            </svg>
+                            <span>导出图片</span>
+                        </button>
+                        <button class="btn-text" id="backHomeBtn">返回首页</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer" id="mainFooter">
+            <div class="footer-inner">
+                <p>© 2024 AI 去水印. 所有处理均在浏览器本地完成，保护您的隐私</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
