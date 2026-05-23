@@ -1,0 +1,104 @@
+/* ── 反馈页 + 隐私政策页 ────────────────────────── */
+
+.feedback-page, .privacy-page { flex: 1; background: var(--neutral-white); }
+
+.page-container { max-width: 800px; margin: 0 auto; padding: 64px 24px; }
+.page-header { text-align: center; margin-bottom: 48px; }
+
+.page-icon {
+    width: 64px; height: 64px;
+    background: var(--bg-light-blue); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+}
+.page-icon svg { width: 32px; height: 32px; color: var(--primary-blue); }
+.page-title { font-size: 36px; color: var(--neutral-900); margin-bottom: 12px; }
+.page-subtitle { font-size: 16px; color: var(--neutral-600); }
+
+/* 反馈成功 */
+.feedback-success { text-align: center; padding: 48px 0; }
+
+.success-icon {
+    width: 80px; height: 80px;
+    background: var(--bg-light-blue); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+}
+.success-icon svg { width: 40px; height: 40px; color: var(--primary-blue); }
+.success-title { font-size: 24px; color: var(--neutral-900); margin-bottom: 12px; }
+.success-desc { font-size: 16px; color: var(--neutral-600); margin-bottom: 24px; }
+
+/* 反馈表单 */
+.feedback-form-wrapper {
+    background: var(--neutral-white);
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-md);
+    padding: 32px; margin-bottom: 48px;
+}
+.feedback-form { display: flex; flex-direction: column; gap: 24px; }
+
+/* 联系信息 */
+.contact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 48px; }
+
+.contact-card { padding: 24px; background: var(--neutral-100); border-radius: var(--radius-md); }
+.contact-card h3 { font-size: 16px; color: var(--neutral-900); margin-bottom: 8px; }
+.contact-desc { font-size: 14px; color: var(--neutral-600); margin-bottom: 8px; }
+
+.contact-link {
+    font-size: 14px; color: var(--primary-blue); text-decoration: none;
+    transition: color var(--transition-normal);
+}
+.contact-link:hover { color: var(--primary-blue-hover); }
+
+/* FAQ */
+.faq-section { margin-bottom: 48px; }
+.faq-title { font-size: 24px; color: var(--neutral-900); text-align: center; margin-bottom: 24px; }
+.faq-list { display: flex; flex-direction: column; gap: 12px; }
+
+.faq-item { padding: 16px; background: var(--neutral-100); border-radius: var(--radius-sm); cursor: pointer; }
+
+.faq-question {
+    font-size: 14px; font-weight: var(--font-weight-medium); color: var(--neutral-900);
+    list-style: none; display: flex; align-items: center; justify-content: space-between;
+}
+.faq-question::-webkit-details-marker { display: none; }
+.faq-question::after {
+    content: ''; width: 8px; height: 8px;
+    border-right: 2px solid var(--neutral-600); border-bottom: 2px solid var(--neutral-600);
+    transform: rotate(-45deg); transition: transform var(--transition-normal);
+}
+.faq-item[open] .faq-question::after { transform: rotate(45deg); }
+.faq-answer { margin-top: 12px; font-size: 14px; color: var(--neutral-600); line-height: 1.6; }
+
+/* 隐私页 */
+.privacy-page .page-container { max-width: 900px; }
+
+.privacy-highlights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }
+.highlight-card {
+    padding: 16px; background: var(--bg-light-blue);
+    border-radius: var(--radius-md); border: 1px solid var(--border-light-blue);
+}
+.highlight-icon { width: 24px; height: 24px; color: var(--primary-blue); margin-bottom: 8px; }
+.highlight-title { font-size: 14px; color: var(--neutral-900); margin-bottom: 4px; }
+.highlight-desc { font-size: 12px; color: var(--neutral-600); }
+
+.privacy-content { margin-bottom: 48px; }
+.privacy-section { margin-bottom: 32px; }
+.section-heading { font-size: 20px; color: var(--neutral-900); margin-bottom: 16px; }
+
+.privacy-section p { font-size: 14px; color: var(--neutral-600); line-height: 1.8; margin-bottom: 12px; }
+.privacy-section ul { margin-left: 24px; margin-bottom: 12px; }
+.privacy-section li { font-size: 14px; color: var(--neutral-600); line-height: 1.8; }
+
+.contact-info-box { padding: 16px; background: var(--neutral-100); border-radius: var(--radius-sm); }
+.contact-info-box p { margin-bottom: 8px; }
+.contact-info-box p:last-child { margin-bottom: 0; }
+
+.privacy-cta {
+    padding: 32px; background: var(--bg-light-blue);
+    border-radius: var(--radius-md); border: 1px solid var(--border-light-blue);
+    text-align: center;
+}
+.cta-icon { width: 48px; height: 48px; color: var(--primary-blue); margin-bottom: 12px; }
+.cta-title { font-size: 20px; color: var(--neutral-900); margin-bottom: 8px; }
+.cta-desc { font-size: 14px; color: var(--neutral-600); }

@@ -1,0 +1,27 @@
+/* ── 响应式 ────────────────────────── */
+
+@media (max-width: 1200px) {
+    .features-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 1024px) {
+    .editor-page { flex-direction: column; }
+    .control-panel { width: 100%; max-height: 40vh; border-left: none; border-top: 1px solid var(--neutral-200); }
+    .privacy-highlights { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    .header-inner { padding: 0 16px; }
+    .hero-title { font-size: 32px; }
+    .hero-subtitle { font-size: 16px; }
+    .upload-container { padding: 0 16px; }
+    .upload-area { height: 300px; }
+    .features-grid { grid-template-columns: 1fr; padding: 0 16px 40px; }
+    .comparison-grid { grid-template-columns: 1fr; padding: 0 16px; }
+    .steps-grid { grid-template-columns: 1fr; gap: 24px; }
+    .nav { display: none; }
+    .page-container { padding: 40px 16px; }
+    .page-title { font-size: 28px; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .feedback-form-wrapper { padding: 24px 16px; }
+}

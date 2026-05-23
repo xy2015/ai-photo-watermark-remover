@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 去水印 - 智能图片水印去除工具</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/landing.css">
+    <link rel="stylesheet" href="css/editor.css">
+    <link rel="stylesheet" href="css/pages.css">
+    <link rel="stylesheet" href="css/responsive.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -574,6 +580,15 @@
     <!-- Toast Notification -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <script src="js/api-client.js"></script>
+    <script>
+        // 生产环境可通过 Nginx 注入不同 API 地址:
+        // <script>window.API_BASE_URL = 'https://api.example.com/api';</script>
+    </script>
+    <script src="js/image-processor.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/canvas-editor.js"></script>
+    <script src="js/ui-controller.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

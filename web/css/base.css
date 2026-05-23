@@ -1,0 +1,53 @@
+/* ── 基础变量 & 重置 ────────────────────────── */
+:root {
+    --primary-blue: #165DFF;
+    --primary-blue-hover: #4080FF;
+    --primary-blue-active: #0E42D2;
+    --primary-blue-disabled: #94BFFF;
+
+    --neutral-900: #1D2129;
+    --neutral-600: #4E5969;
+    --neutral-400: #86909C;
+    --neutral-300: #C9CDD4;
+    --neutral-200: #E5E6EB;
+    --neutral-100: #F2F3F5;
+    --neutral-white: #FFFFFF;
+
+    --bg-light-blue: #F2F8FF;
+    --bg-gray: #FAFBFC;
+    --border-light-blue: #D4E8FF;
+
+    --font-size: 16px;
+    --font-weight-medium: 500;
+    --font-weight-normal: 400;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+
+    --transition-fast: 150ms ease;
+    --transition-normal: 200ms ease;
+    --transition-slow: 300ms ease;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { font-size: var(--font-size); }
+html, body { height: 100%; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--neutral-white);
+    color: var(--neutral-900);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.hidden { display: none !important; }

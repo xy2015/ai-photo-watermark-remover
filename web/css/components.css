@@ -1,0 +1,216 @@
+/* ── 公共组件：按钮、表单、Toast ────────────────────────── */
+
+/* 按钮 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.btn svg { width: 20px; height: 20px; }
+
+.btn-primary { background: var(--primary-blue); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-blue-hover); }
+.btn-primary:active:not(:disabled) { background: var(--primary-blue-active); }
+.btn-primary:disabled { background: var(--primary-blue-disabled); cursor: not-allowed; }
+
+.btn-secondary { background: var(--neutral-100); color: var(--neutral-900); }
+.btn-secondary:hover:not(:disabled) { background: var(--neutral-200); }
+.btn-secondary:active:not(:disabled) { background: var(--neutral-300); }
+.btn-secondary:disabled { background: var(--neutral-100); color: var(--neutral-300); cursor: not-allowed; }
+
+.btn-large { height: 52px; padding: 0 32px; }
+.btn-full { width: 100%; }
+
+.btn-text {
+    width: 100%;
+    height: 44px;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: var(--neutral-600);
+    cursor: pointer;
+    transition: color var(--transition-normal);
+}
+.btn-text:hover { color: var(--primary-blue); }
+
+/* 图标按钮 */
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    border: none;
+    background: var(--neutral-100);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neutral-600);
+    transition: all var(--transition-normal);
+}
+.icon-btn:hover:not(:disabled) { background: var(--neutral-200); color: var(--neutral-900); }
+.icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.icon-btn svg { width: 16px; height: 16px; }
+
+/* 表单 */
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-label { font-size: 14px; color: var(--neutral-900); }
+.required { color: #F53F3F; }
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--neutral-100);
+    border: 2px solid transparent;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--neutral-900);
+    transition: all var(--transition-normal);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder { color: var(--neutral-300); }
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    background: var(--neutral-white);
+    border-color: var(--primary-blue);
+    outline: none;
+}
+
+.form-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234E5969' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 40px;
+}
+
+.form-textarea { resize: none; min-height: 150px; }
+.form-hint { font-size: 12px; color: var(--neutral-600); }
+
+/* Toast */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 1000;
+}
+
+.toast {
+    padding: 14px 20px;
+    background: var(--neutral-white);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease;
+    border-left: 4px solid var(--primary-blue);
+}
+
+.toast.success { border-left-color: #10B981; }
+.toast.error { border-left-color: #F53F3F; }
+.toast.warning { border-left-color: #F59E0B; }
+.toast-icon { width: 20px; height: 20px; }
+.toast-message { font-size: 14px; color: var(--neutral-900); }
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* 区域选择 */
+.region-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+.region-btn {
+    height: 40px;
+    padding: 0 12px;
+    border: 2px solid var(--neutral-200);
+    background: var(--neutral-white);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--neutral-600);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+.region-btn:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+.region-btn.active { border-color: var(--primary-blue); background: var(--bg-light-blue); color: var(--primary-blue); }
+
+/* 工具按钮 */
+.tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+.tool-btn {
+    height: 36px;
+    padding: 0 12px;
+    border: none;
+    background: var(--neutral-100);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--neutral-600);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+.tool-btn:hover { background: var(--neutral-200); color: var(--neutral-900); }
+.tool-btn.active { background: var(--primary-blue); color: white; }
+
+/* 滑块 */
+.slider-group { display: flex; flex-direction: column; gap: 12px; }
+.slider-header { display: flex; align-items: center; justify-content: space-between; }
+.slider-label { font-size: 14px; color: var(--neutral-900); }
+.slider-value { font-size: 14px; color: var(--neutral-600); }
+
+.slider {
+    width: 100%;
+    height: 4px;
+    background: var(--neutral-200);
+    border-radius: 2px;
+    appearance: none;
+    cursor: pointer;
+}
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px; height: 16px;
+    background: var(--primary-blue);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background var(--transition-normal);
+}
+.slider::-webkit-slider-thumb:hover { background: var(--primary-blue-hover); }
+.slider::-moz-range-thumb {
+    width: 16px; height: 16px;
+    background: var(--primary-blue);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+/* 画笔描边 & 选框 */
+.brush-stroke {
+    position: absolute;
+    background: rgba(22, 93, 255, 0.3);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.selection-box {
+    position: absolute;
+    border: 2px dashed var(--primary-blue);
+    background: rgba(22, 93, 255, 0.1);
+    pointer-events: none;
+}

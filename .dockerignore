@@ -1,9 +1,11 @@
+.git/
+.env
 __pycache__/
 *.pyc
-*.pyo
-.venv/
 uploads/
 processed/
-.env
-*.pid
 node_modules/
+*.md
+start.bat
+start.sh
+deploy.sh
