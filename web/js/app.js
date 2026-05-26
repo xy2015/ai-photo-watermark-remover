@@ -8,7 +8,7 @@ class WatermarkRemoverApp {
         this.isProcessing = false;
         this.isShowingOriginal = false;
 
-        this.api = new ApiClient('http://localhost:5000/api');
+        this.api = new ApiClient();
         this.processor = ImageProcessor;
 
         this.init();
