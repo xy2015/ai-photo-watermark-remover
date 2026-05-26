@@ -2,6 +2,8 @@
 
 一款主打「无损修复 + 智能防误删」的轻量化去水印工具，覆盖 PC 网页端。
 
+**在线体验：[https://xy2015.github.io/ai-photo-watermark-remover/](https://xy2015.github.io/ai-photo-watermark-remover/)**
+
 ## ✨ 特性
 
 - 🚀 **双模式去水印**：智能快捷模式 + 手动精准模式
@@ -10,11 +12,12 @@
 - 🎯 **极简设计**：Figma 设计系统，一比一复刻
 - 🧠 **智能检测**：基于 Canny 边缘检测的自动水印区域识别
 - 🛡️ **安全校验**：文件 Magic Bytes 校验，防止恶意文件上传
+- 🌐 **零部署成本**：支持 GitHub Pages 免费静态部署
 
 ## 📁 项目结构
 
 ```
-remove-water/
+ai-photo-watermark-remover/
 ├── web/                      # PC 网页端
 │   ├── index.html            # 主页面
 │   ├── css/                  # 按关注点拆分的样式
@@ -26,26 +29,36 @@ remove-water/
 │   │   ├── pages.css         #   反馈 & 隐私页
 │   │   └── responsive.css    #   响应式断点
 │   └── js/                   # 模块化 JavaScript
-│       ├── api-client.js     #   API 调用封装
+│       ├── api-client.js     #   API 调用封装（自动降级）
 │       ├── image-processor.js#   前端本地图像处理算法
 │       ├── router.js         #   页面路由（导航）
 │       ├── canvas-editor.js  #   Canvas 编辑器（画笔/缩放/历史）
 │       ├── ui-controller.js  #   UI 控制器（Toast/标签/表单）
 │       └── app.js            #   主应用入口（组合各模块）
-├── server/                   # 后端 API 服务
+├── server/                   # 后端 API 服务（可选）
 │   ├── app.py                #   Flask 应用入口 + 路由
 │   ├── config.py             #   配置常量
 │   ├── utils.py              #   图片编解码、文件校验工具
 │   ├── services.py           #   水印检测 & 去除核心算法
 │   ├── requirements.txt      #   Python 依赖
 │   └── test_server.py        #   单元测试
+├── .github/workflows/        # GitHub Actions
+│   └── deploy.yml            #   GitHub Pages 自动部署
 ├── uploads/                  # 上传图片临时存储（自动创建）
 └── processed/                # 处理后图片临时存储（自动创建）
 ```
 
 ## 🚀 快速开始
 
-### 方式一：一键启动（推荐）
+### 方式一：GitHub Pages 在线访问（零成本）
+
+直接访问：[https://xy2015.github.io/ai-photo-watermark-remover/](https://xy2015.github.io/ai-photo-watermark-remover/)
+
+无需安装任何依赖，浏览器打开即用。纯前端模式使用加权邻域插值算法进行本地修复。
+
+> 如需 Fork 到自己账号部署：Fork 后在仓库 Settings → Pages → Source 选择 **GitHub Actions** 即可自动部署。
+
+### 方式二：一键启动（推荐本地开发）
 
 **Windows：**
 ```bash
@@ -60,7 +73,7 @@ chmod +x start.sh
 
 脚本会自动安装依赖、启动后端 Flask 服务和前端静态服务。
 
-### 方式二：手动启动
+### 方式三：手动启动
 
 1. **安装依赖**
 ```bash
@@ -83,7 +96,7 @@ npx serve -l 3000 -s .
 4. **访问应用**
 打开浏览器访问 `http://localhost:3000`
 
-### 方式三：Docker 部署
+### 方式四：Docker 部署
 
 ```bash
 # 复制并编辑环境配置
@@ -98,7 +111,7 @@ docker-compose ps
 
 访问 `http://localhost` 即可使用。
 
-### 方式四：生产部署
+### 方式五：生产部署
 
 ```bash
 chmod +x deploy.sh
@@ -106,6 +119,15 @@ chmod +x deploy.sh
 ```
 
 交互式选择 Docker Compose 或 Gunicorn + Nginx 部署方式。
+
+## 🌐 部署模式说明
+
+| 模式 | 后端 | 修复算法 | 适用场景 |
+|------|------|----------|----------|
+| 纯前端（GitHub Pages） | 不需要 | 加权邻域插值 | 免费部署、轻量使用 |
+| 前端 + 后端 | Flask | TELEA / Navier-Stokes | 高质量修复、生产环境 |
+
+前端会自动检测后端可用性，API 不可用时自动降级为本地算法。
 
 ## ⚙️ 环境变量
 
@@ -147,6 +169,10 @@ chmod +x deploy.sh
 - OpenCV (cv2) 图像处理（TELEA / Navier-Stokes inpainting）
 - NumPy 数值计算
 
+### 部署
+- GitHub Pages + GitHub Actions（免费静态部署）
+- Docker Compose / Gunicorn + Nginx（生产部署）
+
 ## 📋 功能特性
 
 ### 已实现
@@ -161,6 +187,7 @@ chmod +x deploy.sh
 - ✅ 隐私政策页面
 - ✅ 自动水印区域检测
 - ✅ 加权邻域插值本地降级处理
+- ✅ GitHub Pages 免费静态部署
 
 ### 核心算法
 - **TELEA 算法**：快速图像修复，适合快捷模式
