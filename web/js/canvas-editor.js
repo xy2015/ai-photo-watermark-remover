@@ -229,7 +229,8 @@ class CanvasEditor {
         return 1;
     }
 
-    // 本地处理：在全分辨率离屏画布上用 Telea 算法修复，导出保持原清晰度
+    // 本地处理：在全分辨率离屏画布上修复，导出保持原清晰度
+    // 返回 true 表示有像素被改动（用于提示用户），false 表示未检测到目标
     processLocal(processor, currentTab) {
         const off = document.createElement('canvas');
         off.width = this.originalImage.width;
@@ -240,23 +241,17 @@ class CanvasEditor {
 
         const W = off.width, H = off.height;
         const factor = this.getFullResFactor();
+        let changed = false;
 
         if (currentTab === 'manual' && this.brushStrokes.length > 0) {
-            const mask = processor.buildMaskFromStrokes(W, H, this.brushStrokes, factor);
-            processor.inpaintTelea(offData.data, W, H, mask, 5);
+            let mask = processor.buildMaskFromStrokes(W, H, this.brushStrokes, factor);
+            // 膨胀以覆盖抗锯齿/半透明水印残留光晕，避免涂抹后仍有鬼影
+            processor.dilateMask(mask, W, H, Math.max(2, Math.round(Math.min(W, H) * 0.004)));
+            processor.inpaintTelea(offData.data, W, H, mask, 6);
+            changed = true;
         } else {
-            // 自动模式：默认右下角区域（与后端 REGION_CONFIGS 对齐）
-            const startX = Math.floor(W * 0.65);
-            const startY = Math.floor(H * 0.75);
-            const w = Math.floor(W * 0.30);
-            const h = Math.floor(H * 0.20);
-            const mask = new Uint8Array(W * H);
-            for (let y = startY; y < startY + h && y < H; y++) {
-                for (let x = startX; x < startX + w && x < W; x++) {
-                    mask[y * W + x] = 255;
-                }
-            }
-            processor.inpaintTelea(offData.data, W, H, mask, 5);
+            // 自动模式：边缘检测定位水印区域并修复（无后端时也能生效）
+            changed = processor.removeWatermarkAuto(offData.data, W, H, { radius: 6 });
         }
 
         octx.putImageData(offData, 0, 0);
@@ -266,6 +261,7 @@ class CanvasEditor {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(off, 0, 0, this.canvas.width, this.canvas.height);
         this.processedImageData = off.toDataURL('image/png');
+        return changed;
     }
 
     // 本地一键去背景：全分辨率离屏画布 + 区域生长算法（无后端时的降级方案）

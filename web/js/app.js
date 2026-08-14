@@ -305,7 +305,10 @@ class WatermarkRemoverApp {
         } catch (e) {
             console.warn('API调用失败，使用本地处理:', e);
         }
-        this.editor.processLocal(this.processor, this.currentTab);
+        const changed = this.editor.processLocal(this.processor, this.currentTab);
+        if (changed === false) {
+            this.ui.showToast('未检测到明显水印，请尝试手动涂抹', 'warning');
+        }
     }
 
     async processManual(imageData) {

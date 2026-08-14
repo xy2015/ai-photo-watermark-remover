@@ -125,18 +125,28 @@ REGION_CONFIGS = {
 
 
 def remove_watermark_auto(image, region_type='bottom-right'):
-    """自动去水印：根据预设区域位置进行处理"""
-    h, w = image.shape[:2]
-    regions = []
+    """自动去水印：先用边缘检测定位水印区域，再修复检测到的区域
 
-    cfg = REGION_CONFIGS.get(region_type)
-    if cfg:
-        regions.append({
-            'x': int(w * cfg['x_ratio']),
-            'y': int(h * cfg['y_ratio']),
-            'width': int(w * cfg['w_ratio']),
-            'height': int(h * cfg['h_ratio'])
-        })
+    - 检测优先：基于 Canny 边缘 + 连通分量 + 文字/logo 筛选，覆盖图像中真实存在的水印
+    - 检测不到时回退到用户选择的预设区域（兼容旧行为），保证"一键"始终有动作
+    """
+    h, w = image.shape[:2]
+
+    regions = detect_watermark_regions(image)
+
+    if not regions:
+        # 回退：预设区域（多为水印常出现的角落）
+        cfg = REGION_CONFIGS.get(region_type)
+        if cfg:
+            regions.append({
+                'x': int(w * cfg['x_ratio']),
+                'y': int(h * cfg['y_ratio']),
+                'width': int(w * cfg['w_ratio']),
+                'height': int(h * cfg['h_ratio'])
+            })
+
+    if not regions:
+        return image, []
 
     mask = np.zeros(image.shape[:2], dtype=np.uint8)
     for region in regions:

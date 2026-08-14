@@ -29,23 +29,6 @@ class ImageProcessor {
         }
         if (holeCount === 0) return; // 没有需要修复的区域
 
-        // 预计算原始图像的梯度（仅在已知像素上取用，稳定不反馈）
-        const gx = new Float32Array(N * 3);
-        const gy = new Float32Array(N * 3);
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                const i = y * w + x;
-                for (let c = 0; c < 3; c++) {
-                    const xl = x > 0 ? data[(i - 1) * 4 + c] : data[i * 4 + c];
-                    const xr = x < w - 1 ? data[(i + 1) * 4 + c] : data[i * 4 + c];
-                    const yt = y > 0 ? data[(i - w) * 4 + c] : data[i * 4 + c];
-                    const yb = y < h - 1 ? data[(i + w) * 4 + c] : data[i * 4 + c];
-                    gx[i * 3 + c] = (xr - xl) * 0.5;
-                    gy[i * 3 + c] = (yb - yt) * 0.5;
-                }
-            }
-        }
-
         // 空洞到最近已知像素的欧氏距离（用于快速行进的推进顺序与前沿法线）
         const sq = distanceTransformSquared(known, w, h); // seeds = 已知像素
         const dist = new Float32Array(N);
@@ -56,6 +39,17 @@ class ImageProcessor {
         for (let i = 0; i < N; i++) if (hole[i]) heap.push(i, dist[i]);
 
         const R = radius, R2 = R * R;
+
+        // 仅在"已定稿(done)"像素上取用局部梯度，避免空洞原始内容反馈污染传播
+        const gradAt = (qi, c) => {
+            const qx = qi % w, qy = (qi / w) | 0;
+            const center = data[qi * 4 + c];
+            const xl = qx > 0 && done[qi - 1] ? data[(qi - 1) * 4 + c] : center;
+            const xr = qx < w - 1 && done[qi + 1] ? data[(qi + 1) * 4 + c] : center;
+            const yt = qy > 0 && done[qi - w] ? data[(qi - w) * 4 + c] : center;
+            const yb = qy < h - 1 && done[qi + w] ? data[(qi + w) * 4 + c] : center;
+            return { gx: (xr - xl) * 0.5, gy: (yb - yt) * 0.5 };
+        };
 
         while (!heap.isEmpty()) {
             const p = heap.pop();
@@ -113,10 +107,11 @@ class ImageProcessor {
                         wgt = 1 / d;
                     }
 
-                    // Telea 估计：I(q) + ∇I(q)·(p−q)
-                    const vr = data[qi * 4] + gx[qi * 3] * rx + gy[qi * 3] * ry;
-                    const vg = data[qi * 4 + 1] + gx[qi * 3 + 1] * rx + gy[qi * 3 + 1] * ry;
-                    const vb = data[qi * 4 + 2] + gx[qi * 3 + 2] * rx + gy[qi * 3 + 2] * ry;
+                    // Telea 估计：I(q) + ∇I(q)·(p−q)，梯度取自已定稿像素，杜绝空洞污染
+                    const gR = gradAt(qi, 0), gG = gradAt(qi, 1), gB = gradAt(qi, 2);
+                    const vr = data[qi * 4] + gR.gx * rx + gR.gy * ry;
+                    const vg = data[qi * 4 + 1] + gG.gx * rx + gG.gy * ry;
+                    const vb = data[qi * 4 + 2] + gB.gx * rx + gB.gy * ry;
                     sr += wgt * vr; sg += wgt * vg; sb += wgt * vb; wsum += wgt;
                 }
             }
@@ -209,102 +204,232 @@ class ImageProcessor {
         return canvas.toDataURL('image/png');
     }
 
-    // ── 一键去背景（纯前端降级算法）────────────────────────────
-    // 区域生长：从四边种子出发，沿"局部颜色相近"的邻域蔓延，
-    // 可跟随渐变背景、在遇到强边缘（主体轮廓）处停止。
+    // ── mask 膨胀（覆盖抗锯齿/半透明残留）──────────────────────
+    static dilateMask(mask, w, h, r) {
+        if (r <= 0) return;
+        const src = mask.slice();
+        const r2 = r * r;
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                if (!src[y * w + x]) continue;
+                const y0 = Math.max(0, y - r), y1 = Math.min(h - 1, y + r);
+                const x0 = Math.max(0, x - r), x1 = Math.min(w - 1, x + r);
+                for (let yy = y0; yy <= y1; yy++) {
+                    const dy = yy - y;
+                    for (let xx = x0; xx <= x1; xx++) {
+                        const dx = xx - x;
+                        if (dx * dx + dy * dy <= r2) mask[yy * w + xx] = 255;
+                    }
+                }
+            }
+        }
+    }
+
+    // ── 一键去水印：自动检测水印区域 ──────────────────────────
+    // 纯前端实现（无后端也可生效）。策略：
+    //  1) 降采样灰度（提速）
+    //  2) Sobel 边缘 + 自适应阈值（Canny 式）
+    //  3) 连通分量 + 文字/logo 筛选（面积、长宽比、填充率）
+    //  4) 合并邻近框（同一水印的笔画/字母）
+    // 返回原图分辨率下的区域数组 [{x,y,width,height}]，未检测到返回 []
+    static detectWatermarkRegions(data, width, height) {
+        const MAX = 480;
+        const scale = Math.min(1, MAX / Math.max(width, height));
+        const sw = Math.max(1, Math.round(width * scale));
+        const sh = Math.max(1, Math.round(height * scale));
+
+        // 1) 降采样灰度（最近点采样，检测足够）
+        const gray = new Float32Array(sw * sh);
+        for (let yy = 0; yy < sh; yy++) {
+            for (let xx = 0; xx < sw; xx++) {
+                const sx = Math.min(width - 1, Math.floor(xx / scale));
+                const sy = Math.min(height - 1, Math.floor(yy / scale));
+                const i = (sy * width + sx) * 4;
+                gray[yy * sw + xx] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            }
+        }
+
+        // 2) Sobel 边缘 + 自适应阈值
+        const mag = new Float32Array(sw * sh);
+        let mx = 0;
+        for (let y = 0; y < sh; y++) {
+            for (let x = 0; x < sw; x++) {
+                const xl = x > 0 ? gray[y * sw + x - 1] : gray[y * sw + x];
+                const xr = x < sw - 1 ? gray[y * sw + x + 1] : gray[y * sw + x];
+                const yt = y > 0 ? gray[(y - 1) * sw + x] : gray[y * sw + x];
+                const yb = y < sh - 1 ? gray[(y + 1) * sw + x] : gray[y * sw + x];
+                const m = Math.hypot(xr - xl, yb - yt);
+                mag[y * sw + x] = m;
+                if (m > mx) mx = m;
+            }
+        }
+        const th = Math.max(14, mx * 0.15);
+        const edge = new Uint8Array(sw * sh);
+        for (let i = 0; i < sw * sh; i++) edge[i] = mag[i] > th ? 1 : 0;
+
+        // 3) 连通分量（4 邻）
+        const labels = new Int32Array(sw * sh).fill(-1);
+        const comps = [];
+        for (let i = 0; i < sw * sh; i++) {
+            if (edge[i] && labels[i] < 0) {
+                let x0 = sw, y0 = sh, x1 = 0, y1 = 0, cnt = 0;
+                const stack = [i];
+                labels[i] = comps.length;
+                while (stack.length) {
+                    const j = stack.pop();
+                    const x = j % sw, y = (j / sw) | 0;
+                    cnt++;
+                    if (x < x0) x0 = x; if (x > x1) x1 = x;
+                    if (y < y0) y0 = y; if (y > y1) y1 = y;
+                    if (x > 0 && edge[j - 1] && labels[j - 1] < 0) { labels[j - 1] = comps.length; stack.push(j - 1); }
+                    if (x < sw - 1 && edge[j + 1] && labels[j + 1] < 0) { labels[j + 1] = comps.length; stack.push(j + 1); }
+                    if (y > 0 && edge[j - sw] && labels[j - sw] < 0) { labels[j - sw] = comps.length; stack.push(j - sw); }
+                    if (y < sh - 1 && edge[j + sw] && labels[j + sw] < 0) { labels[j + sw] = comps.length; stack.push(j + sw); }
+                }
+                comps.push({ cnt, x0, y0, x1, y1 });
+            }
+        }
+
+        // 4) 收集候选框（先不按长宽比剔除，避免细笔画被单独过滤）
+        const rawBoxes = [];
+        const minA = Math.max(6, Math.round(sw * sh * 0.0004));
+        const maxA = sw * sh * 0.2;
+        for (const c of comps) {
+            const bw = c.x1 - c.x0 + 1, bh = c.y1 - c.y0 + 1;
+            if (c.cnt < minA || c.cnt > maxA) continue;
+            if (bw > sw * 0.95 || bh > sh * 0.95) continue;
+            const aspect = bw / Math.max(1, bh);
+            if (aspect > 200 || aspect < 1 / 200) continue;
+            rawBoxes.push({ x: c.x0, y: c.y0, w: bw, h: bh });
+        }
+
+        // 5) 合并邻近框（同一水印的笔画/字母）
+        rawBoxes.sort((a, b) => a.y - b.y || a.x - b.x);
+        const merged = [];
+        const gap = Math.max(4, Math.round(Math.min(sw, sh) * 0.012));
+        for (const b of rawBoxes) {
+            let placed = false;
+            for (const m of merged) {
+                const ox = Math.min(b.x + b.w, m.x + m.w) - Math.max(b.x, m.x);
+                const oy = Math.min(b.y + b.h, m.y + m.h) - Math.max(b.y, m.y);
+                if (ox > -gap && oy > -gap) {
+                    const nx0 = Math.min(m.x, b.x), ny0 = Math.min(m.y, b.y);
+                    const nx1 = Math.max(m.x + m.w, b.x + b.w), ny1 = Math.max(m.y + m.h, b.y + b.h);
+                    m.x = nx0; m.y = ny0; m.w = nx1 - nx0; m.h = ny1 - ny0;
+                    placed = true; break;
+                }
+            }
+            if (!placed) merged.push({ ...b });
+        }
+
+        // 6) 合并后筛选：剔除极端细长/超大框（多为噪点或照片主体）
+        const boxes = [];
+        for (const m of merged) {
+            if (m.w > sw * 0.95 || m.h > sh * 0.95) continue;
+            const aspect = m.w / Math.max(1, m.h);
+            if (aspect > 40 || aspect < 1 / 40) continue;
+            // 实心文字/纯色 logo 填充率高，不能排除；照片主体由 maxA 拦截
+            boxes.push(m);
+        }
+
+        // 7) 映射回原图分辨率
+        return boxes.map(b => ({
+            x: Math.floor(b.x / scale), y: Math.floor(b.y / scale),
+            width: Math.ceil(b.w / scale), height: Math.ceil(b.h / scale)
+        }));
+    }
+
+    // 一键去水印（纯前端）：检测→膨胀→Telea 修复。返回是否检测到区域
+    static removeWatermarkAuto(data, width, height, opts = {}) {
+        const regions = ImageProcessor.detectWatermarkRegions(data, width, height);
+        if (!regions.length) return false;
+        const mask = new Uint8Array(width * height);
+        const pad = Math.max(2, Math.round(Math.min(width, height) * 0.004));
+        for (const r of regions) {
+            const x0 = Math.max(0, r.x - pad), y0 = Math.max(0, r.y - pad);
+            const x1 = Math.min(width - 1, r.x + r.width + pad);
+            const y1 = Math.min(height - 1, r.y + r.height + pad);
+            for (let y = y0; y <= y1; y++)
+                for (let x = x0; x <= x1; x++) mask[y * width + x] = 255;
+        }
+        ImageProcessor.dilateMask(mask, width, height, pad);
+        ImageProcessor.inpaintTelea(data, width, height, mask, opts.radius || 6);
+        return true;
+    }
+
+    // ── 一键去背景（纯前端）──────────────────────────────────
+    // 区域生长：所有边框像素作为背景种子，沿"相邻像素颜色相近"的邻域蔓延，
+    // 在主体与背景颜色不连续处自然停止，从而把居中主体保留为前景。
     // mode='keep'  → 背景透明（alpha=0）；mode='remove' → 删除主体并用 Telea 修复。
     static removeBackground(data, width, height, opts = {}) {
-        const tolerance = opts.tolerance != null ? opts.tolerance : 34; // 邻域颜色距离阈值
-        const feather = opts.feather != null ? opts.feather : 2;         // alpha 边缘羽化半径
+        const tolerance = opts.tolerance != null ? opts.tolerance : 36; // 邻域颜色距离阈值
+        const feather = opts.feather != null ? opts.feather : 2;          // alpha 边缘羽化半径
         const mode = opts.mode || 'keep';
         const n = width * height;
-
-        const at = (x, y) => (y * width + x) * 4;
-        const dist2 = (r, g, b, R, G, B) => {
-            const dr = r - R, dg = g - G, db = b - B;
-            return dr * dr + dg * dg + db * db;
-        };
 
         const isBg = new Uint8Array(n);
         const visited = new Uint8Array(n);
         const stack = [];
-        const seedTol2 = tolerance * tolerance * 3;
 
-        // 1) 背景参考色：四角 3x3 小块的均值（四角几乎总是背景；渐变时各自独立）
-        const cornerColor = (cx, cy) => {
-            let r = 0, g = 0, b = 0, c = 0;
-            for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-                const xx = Math.min(width - 1, Math.max(0, cx + dx));
-                const yy = Math.min(height - 1, Math.max(0, cy + dy));
-                const i = at(xx, yy); r += data[i]; g += data[i + 1]; b += data[i + 2]; c++;
-            }
-            return [r / c, g / c, b / c];
-        };
-        const corners = [
-            cornerColor(1, 1), cornerColor(width - 2, 1),
-            cornerColor(1, height - 2), cornerColor(width - 2, height - 2)
-        ];
-        const nearestCorner = (x, y) => {
-            const cxs = [1, width - 2, 1, width - 2];
-            const cys = [1, 1, height - 2, height - 2];
-            let best = 0, bd = Infinity;
-            for (let k = 0; k < 4; k++) {
-                const d = (x - cxs[k]) * (x - cxs[k]) + (y - cys[k]) * (y - cys[k]);
-                if (d < bd) { bd = d; best = k; }
-            }
-            return corners[best];
-        };
-
-        // 2) 仅"接近最近角颜色"的边框像素作为背景种子（主体贴边的边不会被误种）
-        const seedBorder = (x, y) => {
+        // 种子：所有边框像素（边框几乎总是背景）
+        const seed = (x, y) => {
             const i = y * width + x;
             if (visited[i]) return;
-            visited[i] = 1;
-            const p = at(x, y);
-            const ref = nearestCorner(x, y);
-            if (dist2(data[p], data[p + 1], data[p + 2], ref[0], ref[1], ref[2]) <= seedTol2) {
-                isBg[i] = 1; stack.push(i);
-            }
+            visited[i] = 1; isBg[i] = 1; stack.push(i);
         };
-        for (let x = 0; x < width; x++) { seedBorder(x, 0); seedBorder(x, height - 1); }
-        for (let y = 0; y < height; y++) { seedBorder(0, y); seedBorder(width - 1, y); }
+        for (let x = 0; x < width; x++) { seed(x, 0); seed(x, height - 1); }
+        for (let y = 0; y < height; y++) { seed(0, y); seed(width - 1, y); }
 
-        // 3) 区域生长：邻居被接受当且仅当"与当前像素"局部颜色接近（跟随渐变、止步强边缘）
+        const tol2 = tolerance * tolerance * 3;
         while (stack.length) {
             const i = stack.pop();
             const x = i % width, y = (i / width) | 0;
             const p = i * 4;
             const cr = data[p], cg = data[p + 1], cb = data[p + 2];
-            if (x > 0) ImageProcessor._growNeighbor(isBg, visited, stack, data, width, i - 1, cr, cg, cb, tolerance);
-            if (x < width - 1) ImageProcessor._growNeighbor(isBg, visited, stack, data, width, i + 1, cr, cg, cb, tolerance);
-            if (y > 0) ImageProcessor._growNeighbor(isBg, visited, stack, data, width, i - width, cr, cg, cb, tolerance);
-            if (y < height - 1) ImageProcessor._growNeighbor(isBg, visited, stack, data, width, i + width, cr, cg, cb, tolerance);
+            const tryGrow = (j) => {
+                if (visited[j]) return;
+                const jp = j * 4;
+                const dr = data[jp] - cr, dg = data[jp + 1] - cg, db = data[jp + 2] - cb;
+                if (dr * dr + dg * dg + db * db <= tol2) {
+                    visited[j] = 1; isBg[j] = 1; stack.push(j);
+                }
+            };
+            if (x > 0) tryGrow(i - 1);
+            if (x < width - 1) tryGrow(i + 1);
+            if (y > 0) tryGrow(i - width);
+            if (y < height - 1) tryGrow(i + width);
         }
 
-        // 4) 写入 alpha（背景透明）
+        // 清理：少量迭代多数投票，去除噪点/小洞
+        for (let it = 0; it < 2; it++) ImageProcessor._cleanupMask(isBg, width, height);
+
+        // 写入 alpha（背景透明）
         for (let p = 0; p < n; p++) data[p * 4 + 3] = isBg[p] ? 0 : 255;
 
-        // 5) 边缘羽化：对 alpha 做多次 3x3 均值模糊，仅过渡带产生半透明
+        // 边缘羽化：对 alpha 做多次 3x3 均值模糊，仅过渡带产生半透明
         if (feather > 0) ImageProcessor._featherAlpha(data, width, height, feather);
 
-        // 6) 删除主体模式：用 Telea 把主体区域（非背景）修复为背景内容
+        // 删除主体模式：用 Telea 把主体区域（非背景）修复为背景内容
         if (mode === 'remove') {
             const hole = new Uint8Array(n);
             for (let p = 0; p < n; p++) hole[p] = isBg[p] ? 0 : 255;
-            ImageProcessor.inpaintTelea(data, width, height, hole, 5);
+            ImageProcessor.inpaintTelea(data, width, height, hole, 6);
             for (let p = 0; p < n; p++) data[p * 4 + 3] = 255; // 输出不透明
         }
         return data;
     }
 
-    static _growNeighbor(isBg, visited, stack, data, width, j, cr, cg, cb, tolerance) {
-        if (visited[j]) return;
-        visited[j] = 1;
-        const p = j * 4;
-        const dr = data[p] - cr, dg = data[p + 1] - cg, db = data[p + 2] - cb;
-        if (dr * dr + dg * dg + db * db <= tolerance * tolerance * 3) {
-            isBg[j] = 1;
-            stack.push(j);
+    static _cleanupMask(mask, w, h) {
+        const src = mask.slice();
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                let s = src[y * w + x], c = 1;
+                if (x > 0) { s += src[y * w + x - 1]; c++; }
+                if (x < w - 1) { s += src[y * w + x + 1]; c++; }
+                if (y > 0) { s += src[(y - 1) * w + x]; c++; }
+                if (y < h - 1) { s += src[(y + 1) * w + x]; c++; }
+                mask[y * w + x] = s * 2 >= c ? 1 : 0;
+            }
         }
     }
 

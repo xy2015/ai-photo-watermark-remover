@@ -266,10 +266,32 @@ Content-Type: application/json
 返回透明 PNG（mode=keep，含 alpha 通道）或修复后的不透明图（mode=remove）。无后端时前端自动降级为区域生长算法。
 
 ### 运行测试
+
 ```bash
 cd server
 python test_server.py
 ```
+
+### 本地快速验证（无需后端 / 浏览器）
+
+项目内置纯前端算法（Telea 修复、边缘检测自动去水印、区域生长去背景），
+无需安装任何依赖即可在本地验证效果：
+
+```bash
+# 1) 生成合成测试图并运行三大算法，输出 before/after 到 tools/output/
+node tools/local_test.js
+
+# 2) 启动静态服务器，浏览器打开即可手动测试（上传真实图片）
+cd web && python3 -m http.server 8124
+#   然后访问 http://localhost:8124/index.html
+```
+
+`tools/output/` 下会生成：`wm_original.png` / `wm_auto.png`（一键去水印）、
+`manual_original.png` / `manual_result.png`（手动涂抹修复）、
+`bg_original.png` / `bg_keep.png` / `bg_remove.png`（一键去背景·保留/删除主体）。
+
+> 前端算法在无后端时自动降级运行（与 GitHub Pages 体验一致）；
+> 启动 `server/app.py` 后将自动使用后端 grabCut 高质量路径。
 
 ## 🎨 设计系统
 
