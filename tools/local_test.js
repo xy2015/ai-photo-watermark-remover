@@ -1,6 +1,6 @@
 /**
  * 本地端到端测试（纯 JS，无需浏览器/后端）
- * 生成合成测试图 → 运行三个算法 → 输出 before/after PNG 到 tools/output/
+ * 生成合成测试图 → 运行两个算法（手动去水印 / 一键去背景）→ 输出 before/after PNG 到 tools/output/
  * 运行： node tools/local_test.js
  */
 const fs = require('fs');
@@ -39,31 +39,6 @@ function writePNG(file, data, w, h) {
 const outDir = path.join(__dirname, 'output');
 fs.mkdirSync(outDir, { recursive: true });
 const save = (name, data, w, h) => { writePNG(path.join(outDir, name), data, w, h); console.log('  写入', name); };
-
-// ── 1) 去水印测试图：自然渐变背景 + 角落半透明水印文字 ────────
-{
-  const W = 480, H = 320;
-  const img = new Uint8ClampedArray(W * H * 4);
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    const i = (y * W + x) * 4;
-    img[i] = 30 + (x / W) * 180;
-    img[i + 1] = 60 + (y / H) * 120;
-    img[i + 2] = 90 + ((x + y) / (W + H)) * 120;
-    img[i + 3] = 255;
-  }
-  // 右下角半透明水印（若干细横线模拟文字笔画）
-  for (let y = 230; y < 295; y += 5) for (let x = 320; x < 455; x++) {
-    const i = (y * W + x) * 4;
-    img[i] = Math.min(255, img[i] + 70);
-    img[i + 1] = Math.min(255, img[i + 1] + 70);
-    img[i + 2] = Math.min(255, img[i + 2] + 70);
-  }
-  save('wm_original.png', img, W, H);
-  const auto = img.slice();
-  const ok = ImageProcessor.removeWatermarkAuto(auto, W, H, { radius: 6 });
-  save('wm_auto.png', auto, W, H);
-  console.log('[自动去水印]', ok ? '检测到水印并已修复' : '未检测到（回退）');
-}
 
 // ── 2) 手动去水印：涂抹矩形区域 ─────────────────────────────
 {

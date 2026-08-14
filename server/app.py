@@ -15,7 +15,7 @@ from flask_cors import CORS
 from config import UPLOAD_FOLDER, PROCESSED_FOLDER
 from config import HOST, PORT, DEBUG
 from utils import allowed_file, base64_to_image, image_to_base64
-from services import detect_watermark_regions, remove_watermark_auto, remove_watermark_manual, remove_background
+from services import detect_watermark_regions, remove_watermark_manual, remove_background
 
 
 def create_app(static_folder=None):
@@ -88,30 +88,6 @@ def create_app(static_folder=None):
             })
         except Exception as e:
             return jsonify({'error': f'图片处理失败: {str(e)}'}), 500
-
-    @app.route('/api/process/auto', methods=['POST'])
-    def process_auto():
-        data = request.get_json()
-        if not data or 'image' not in data:
-            return jsonify({'error': '缺少图片数据'}), 400
-
-        try:
-            image = base64_to_image(data['image'])
-            region_type = data.get('region', 'bottom-right')
-
-            result, regions = remove_watermark_auto(image, region_type)
-            result_base64 = image_to_base64(result)
-
-            return jsonify({
-                'success': True,
-                'image': f'data:image/png;base64,{result_base64}',
-                'detected_regions': regions,
-                'message': f'处理了 {len(regions)} 个水印区域'
-            })
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            return jsonify({'error': f'处理失败: {str(e)}'}), 500
 
     @app.route('/api/process/manual', methods=['POST'])
     def process_manual():

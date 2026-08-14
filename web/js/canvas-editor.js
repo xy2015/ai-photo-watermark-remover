@@ -249,9 +249,6 @@ class CanvasEditor {
             processor.dilateMask(mask, W, H, Math.max(2, Math.round(Math.min(W, H) * 0.004)));
             processor.inpaintTelea(offData.data, W, H, mask, 6);
             changed = true;
-        } else {
-            // 自动模式：边缘检测定位水印区域并修复（无后端时也能生效）
-            changed = processor.removeWatermarkAuto(offData.data, W, H, { radius: 6 });
         }
 
         octx.putImageData(offData, 0, 0);

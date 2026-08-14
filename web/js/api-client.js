@@ -14,16 +14,6 @@ class ApiClient {
         }
     }
 
-    async processAuto(imageData, region) {
-        const res = await fetch(`${this.baseUrl}/process/auto`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: imageData, region })
-        });
-        if (!res.ok) return null;
-        return await res.json();
-    }
-
     async processManual(imageData, maskData) {
         const res = await fetch(`${this.baseUrl}/process/manual`, {
             method: 'POST',

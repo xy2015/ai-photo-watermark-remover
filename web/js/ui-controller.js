@@ -34,10 +34,8 @@ class UIController {
 
     // ── 标签页 ────────────────────────────────
 
-    switchTab(tab, tabBtns, autoTab, manualTab, bgTab) {
+    switchTab(tab, tabBtns, manualTab, bgTab) {
         tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
-        autoTab.classList.toggle('hidden', tab !== 'auto');
-        autoTab.classList.toggle('active', tab === 'auto');
         manualTab.classList.toggle('hidden', tab !== 'manual');
         manualTab.classList.toggle('active', tab === 'manual');
         if (bgTab) {
@@ -54,12 +52,6 @@ class UIController {
     switchBgMode(mode, keepBtn, removeBtn) {
         keepBtn.classList.toggle('active', mode === 'keep');
         removeBtn.classList.toggle('active', mode === 'remove');
-    }
-
-    selectRegion(region) {
-        document.querySelectorAll('.region-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.region === region);
-        });
     }
 
     // ── 反馈表单 ────────────────────────────────

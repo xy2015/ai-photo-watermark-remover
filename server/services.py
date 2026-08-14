@@ -104,61 +104,6 @@ def detect_watermark_regions(image):
     return regions
 
 
-REGION_CONFIGS = {
-    'top-left': {
-        'x_ratio': 0.05, 'y_ratio': 0.05,
-        'w_ratio': 0.25, 'h_ratio': 0.15
-    },
-    'top-right': {
-        'x_ratio': 0.70, 'y_ratio': 0.05,
-        'w_ratio': 0.25, 'h_ratio': 0.15
-    },
-    'bottom-left': {
-        'x_ratio': 0.05, 'y_ratio': 0.80,
-        'w_ratio': 0.25, 'h_ratio': 0.15
-    },
-    'bottom-right': {
-        'x_ratio': 0.65, 'y_ratio': 0.75,
-        'w_ratio': 0.30, 'h_ratio': 0.20
-    },
-}
-
-
-def remove_watermark_auto(image, region_type='bottom-right'):
-    """自动去水印：先用边缘检测定位水印区域，再修复检测到的区域
-
-    - 检测优先：基于 Canny 边缘 + 连通分量 + 文字/logo 筛选，覆盖图像中真实存在的水印
-    - 检测不到时回退到用户选择的预设区域（兼容旧行为），保证"一键"始终有动作
-    """
-    h, w = image.shape[:2]
-
-    regions = detect_watermark_regions(image)
-
-    if not regions:
-        # 回退：预设区域（多为水印常出现的角落）
-        cfg = REGION_CONFIGS.get(region_type)
-        if cfg:
-            regions.append({
-                'x': int(w * cfg['x_ratio']),
-                'y': int(h * cfg['y_ratio']),
-                'width': int(w * cfg['w_ratio']),
-                'height': int(h * cfg['h_ratio'])
-            })
-
-    if not regions:
-        return image, []
-
-    mask = np.zeros(image.shape[:2], dtype=np.uint8)
-    for region in regions:
-        x, y, rw, rh = region['x'], region['y'], region['width'], region['height']
-        cv2.rectangle(mask, (x, y), (x + rw, y + rh), 255, -1)
-
-    mask = refine_mask(mask, dilate=2)
-    result = inpaint(image, mask, radius=3, use_telea=True)
-    result = feather_blend(image, result, mask, feather=2)
-    return result, regions
-
-
 def remove_background(image, mode='keep', edge_feather=2):
     """一键去背景：grabCut 自动分割 + 边缘羽化
 

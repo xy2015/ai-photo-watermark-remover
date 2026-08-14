@@ -7,3 +7,5 @@ processed/
 .env
 *.pid
 node_modules/
+.workbuddy/
+tools/output/

@@ -3,8 +3,7 @@
  */
 class WatermarkRemoverApp {
     constructor() {
-        this.currentTab = 'auto';
-        this.selectedRegion = 'bottom-right';
+        this.currentTab = 'manual';
         this.isProcessing = false;
         this.isShowingOriginal = false;
         this.bgFeather = 2;
@@ -47,7 +46,6 @@ class WatermarkRemoverApp {
             progressText: document.getElementById('progressText'),
 
             tabBtns: document.querySelectorAll('.tab-btn'),
-            autoTab: document.getElementById('autoTab'),
             manualTab: document.getElementById('manualTab'),
             bgTab: document.getElementById('bgTab'),
             bgFeather: document.getElementById('bgFeather'),
@@ -104,20 +102,6 @@ class WatermarkRemoverApp {
         el.tabBtns.forEach(btn => btn.addEventListener('click', () => {
             this.switchTab(btn.dataset.tab);
         }));
-
-        // 区域选择
-        document.querySelectorAll('.region-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (btn.dataset.region === 'custom') {
-                    this.currentTab = 'manual';
-                    this.ui.switchTab('manual', el.tabBtns, el.autoTab, el.manualTab);
-                    this.ui.showToast('请使用画笔工具标记水印区域', 'info');
-                    return;
-                }
-                this.selectedRegion = btn.dataset.region;
-                this.ui.selectRegion(btn.dataset.region);
-            });
-        });
 
         // 画笔
         el.brushSize.addEventListener('input', (e) => {
@@ -180,10 +164,10 @@ class WatermarkRemoverApp {
         this.elements.redoBtn.disabled = !this.editor.canRedo();
     }
 
-    // 切换编辑标签页（auto / manual / bg），并同步界面与画布状态
+    // 切换编辑标签页（manual / bg），并同步界面与画布状态
     switchTab(tab) {
         this.currentTab = tab;
-        this.ui.switchTab(tab, this.elements.tabBtns, this.elements.autoTab, this.elements.manualTab, this.elements.bgTab);
+        this.ui.switchTab(tab, this.elements.tabBtns, this.elements.manualTab, this.elements.bgTab);
 
         const isBg = tab === 'bg';
         this.editor.setBgMode(isBg);
@@ -273,7 +257,7 @@ class WatermarkRemoverApp {
             } else if (this.currentTab === 'manual' && this.editor.brushStrokes.length > 0) {
                 await this.processManual(imageData);
             } else {
-                await this.processAuto(imageData);
+                this.ui.showToast('请先用画笔标记需要去除的水印区域', 'warning');
             }
 
             this.elements.progressFill.style.width = '100%';
@@ -290,24 +274,6 @@ class WatermarkRemoverApp {
             this.isProcessing = false;
             this.elements.processingOverlay.classList.add('hidden');
             this.elements.processBtn.disabled = false;
-        }
-    }
-
-    async processAuto(imageData) {
-        try {
-            // 发送全分辨率原图，保证后端处理与导出保真
-            const fullImg = this.editor.originalImage ? this.editor.getFullResDataUrl() : imageData;
-            const data = await this.api.processAuto(fullImg, this.selectedRegion);
-            if (data && data.success && data.image) {
-                this.editor.loadProcessedImage(data.image);
-                return;
-            }
-        } catch (e) {
-            console.warn('API调用失败，使用本地处理:', e);
-        }
-        const changed = this.editor.processLocal(this.processor, this.currentTab);
-        if (changed === false) {
-            this.ui.showToast('未检测到明显水印，请尝试手动涂抹', 'warning');
         }
     }
 

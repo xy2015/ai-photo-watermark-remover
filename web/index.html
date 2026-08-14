@@ -84,8 +84,8 @@
                                 </svg>
                             </div>
                             <div class="feature-content">
-                                <h3 class="feature-title">AI 智能识别</h3>
-                                <p class="feature-desc">自动检测并精准定位水印、文字、LOGO 等元素，智能修复图片内容</p>
+                                <h3 class="feature-title">画笔精准标记</h3>
+                                <p class="feature-desc">使用画笔手动标记水印区域，AI 修复算法智能补全，保持原图清晰度</p>
                             </div>
                         </div>
                         <div class="feature-card">
@@ -128,7 +128,7 @@
                 <section class="comparison-section">
                     <div class="section-header">
                         <h2 class="section-title">效果对比</h2>
-                        <p class="section-subtitle">AI 智能去水印，保持原图质量</p>
+                        <p class="section-subtitle">手动去水印 + AI 智能抠图，保持原图质量</p>
                     </div>
                     <div class="comparison-grid">
                         <div class="comparison-card">
@@ -498,40 +498,15 @@
                     <!-- Tabs -->
                     <div class="panel-tabs">
                         <div class="tabs-wrapper">
-                            <button class="tab-btn active" data-tab="auto">智能去水印</button>
-                            <button class="tab-btn" data-tab="manual">手动去水印</button>
+                            <button class="tab-btn active" data-tab="manual">手动去水印</button>
                             <button class="tab-btn" data-tab="bg">智能抠图</button>
                         </div>
                     </div>
 
                     <!-- Tab Content -->
                     <div class="panel-content">
-                        <!-- Auto Mode -->
-                        <div class="tab-content active" id="autoTab">
-                            <div class="info-box">
-                                <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8L19 13M17.8 6.2L19 5M3 21l9-9M12.2 6.2L11 5"/>
-                                </svg>
-                                <div class="info-content">
-                                    <h3 class="info-title">快捷去水印</h3>
-                                    <p class="info-desc">选择水印位置，快速去除图片中的水印、文字和 LOGO</p>
-                                </div>
-                            </div>
-
-                            <div class="options-group">
-                                <h3 class="options-title">选择水印位置</h3>
-                                <div class="region-selector">
-                                    <button class="region-btn" data-region="top-left">左上角</button>
-                                    <button class="region-btn" data-region="top-right">右上角</button>
-                                    <button class="region-btn" data-region="bottom-left">左下角</button>
-                                    <button class="region-btn active" data-region="bottom-right">右下角</button>
-                                    <button class="region-btn" data-region="custom">自定义（切换到手动）</button>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Manual Mode -->
-                        <div class="tab-content hidden" id="manualTab">
+                        <div class="tab-content active" id="manualTab">
                             <div class="info-box">
                                 <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M12 19l7-7 3 3-7 7-3-3z"/>

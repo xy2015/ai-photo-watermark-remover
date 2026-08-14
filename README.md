@@ -217,17 +217,6 @@ Content-Type: multipart/form-data
 参数: file (图片文件，支持 png/jpg/jpeg/webp)
 ```
 
-#### 自动去水印
-```
-POST /api/process/auto
-Content-Type: application/json
-
-{
-  "image": "data:image/png;base64,...",
-  "region": "bottom-right"
-}
-```
-
 #### 手动去水印
 ```
 POST /api/process/manual
@@ -286,9 +275,11 @@ cd web && python3 -m http.server 8124
 #   然后访问 http://localhost:8124/index.html
 ```
 
-`tools/output/` 下会生成：`wm_original.png` / `wm_auto.png`（一键去水印）、
+`tools/output/` 下会生成：
 `manual_original.png` / `manual_result.png`（手动涂抹修复）、
 `bg_original.png` / `bg_keep.png` / `bg_remove.png`（一键去背景·保留/删除主体）。
+
+> 本地测试工具已移除自动去水印（一键去水印）用例，仅覆盖手动去水印与一键去背景。
 
 > 前端算法在无后端时自动降级运行（与 GitHub Pages 体验一致）；
 > 启动 `server/app.py` 后将自动使用后端 grabCut 高质量路径。
