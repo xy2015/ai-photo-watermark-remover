@@ -43,4 +43,18 @@ class ApiClient {
         if (!res.ok) return null;
         return await res.json();
     }
+
+    async processBackground(imageData, opts = {}) {
+        const res = await fetch(`${this.baseUrl}/process/background`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                image: imageData,
+                mode: opts.mode || 'keep',
+                edge_feather: opts.feather != null ? opts.feather : 2
+            })
+        });
+        if (!res.ok) return null;
+        return await res.json();
+    }
 }

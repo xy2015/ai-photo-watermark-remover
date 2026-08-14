@@ -15,7 +15,7 @@ from flask_cors import CORS
 from config import UPLOAD_FOLDER, PROCESSED_FOLDER
 from config import HOST, PORT, DEBUG
 from utils import allowed_file, base64_to_image, image_to_base64
-from services import detect_watermark_regions, remove_watermark_auto, remove_watermark_manual
+from services import detect_watermark_regions, remove_watermark_auto, remove_watermark_manual, remove_background
 
 
 def create_app(static_folder=None):
@@ -155,6 +155,34 @@ def create_app(static_folder=None):
             })
         except Exception as e:
             return jsonify({'error': f'检测失败: {str(e)}'}), 500
+
+    @app.route('/api/process/background', methods=['POST'])
+    def process_background():
+        data = request.get_json()
+        if not data or 'image' not in data:
+            return jsonify({'error': '缺少图片数据'}), 400
+
+        try:
+            image = base64_to_image(data['image'])
+            mode = data.get('mode', 'keep')
+            if mode not in ('keep', 'remove'):
+                mode = 'keep'
+            edge_feather = int(data.get('edge_feather', 2))
+            edge_feather = max(0, min(edge_feather, 8))
+
+            result = remove_background(image, mode=mode, edge_feather=edge_feather)
+            result_base64 = image_to_base64(result)
+
+            return jsonify({
+                'success': True,
+                'image': f'data:image/png;base64,{result_base64}',
+                'mode': mode,
+                'message': '背景去除成功' if mode == 'keep' else '主体已删除'
+            })
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': f'处理失败: {str(e)}'}), 500
 
     return app
 

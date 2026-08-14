@@ -33,6 +33,18 @@
 
 #imageCanvas { display: block; border-radius: var(--radius-sm); max-width: 100%; height: auto; }
 
+/* 去背景模式：棋盘格底纹可视化透明区域 */
+.canvas-wrapper.bg-mode {
+    background-color: #fff;
+    background-image:
+        linear-gradient(45deg, #d8dde6 25%, transparent 25%),
+        linear-gradient(-45deg, #d8dde6 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #d8dde6 75%),
+        linear-gradient(-45deg, transparent 75%, #d8dde6 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+}
+
 .selection-overlay {
     position: absolute; inset: 0;
     pointer-events: none; border-radius: var(--radius-sm);
@@ -112,6 +124,14 @@
 .info-content { flex: 1; }
 .info-title { font-size: 14px; color: var(--primary-blue); margin-bottom: 4px; }
 .info-desc { font-size: 12px; color: var(--neutral-600); line-height: 1.6; }
+
+/* 提示型信息框（去背景说明） */
+.info-box.info-hint {
+    background: var(--neutral-50, #f7f8fa);
+    border-color: var(--neutral-200, #e5e7eb);
+}
+.info-box.info-hint .info-icon { color: var(--neutral-500, #6b7280); }
+.info-box.info-hint .info-desc { font-size: 12px; }
 
 /* 选项组 */
 .options-group { display: flex; flex-direction: column; gap: 16px; }

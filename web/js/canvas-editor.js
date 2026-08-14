@@ -20,6 +20,7 @@ class CanvasEditor {
 
     loadImage(img, dataUrl) {
         this.image = img;
+        this.originalImage = img; // 全分辨率原图，用于保真修复与导出
         this.originalImageDataUrl = dataUrl;
         this.setupCanvas();
         this.saveToHistory();
@@ -158,6 +159,13 @@ class CanvasEditor {
         const img = new Image();
         img.onload = () => {
             this.processedImage = img;
+            // 保存全分辨率结果用于下载（保真）
+            const off = document.createElement('canvas');
+            off.width = img.naturalWidth;
+            off.height = img.naturalHeight;
+            off.getContext('2d').drawImage(img, 0, 0);
+            this.fullResResult = off;
+            // 显示缩放到画布
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
         };
@@ -189,27 +197,99 @@ class CanvasEditor {
 
     download() {
         const link = document.createElement('a');
-        link.download = `removed-watermark-${Date.now()}.png`;
-        link.href = this.canvas.toDataURL('image/png');
+        link.download = `${this.downloadName || 'removed-watermark'}-${Date.now()}.png`;
+        if (this.fullResResult) {
+            link.href = this.fullResResult.toDataURL('image/png');
+        } else if (this.originalImage) {
+            // 未处理时也按原图全分辨率导出，避免被显示缩放压缩
+            const off = document.createElement('canvas');
+            off.width = this.originalImage.width;
+            off.height = this.originalImage.height;
+            off.getContext('2d').drawImage(this.originalImage, 0, 0);
+            link.href = off.toDataURL('image/png');
+        } else {
+            link.href = this.canvas.toDataURL('image/png');
+        }
         link.click();
     }
 
+    // 返回全分辨率原图 dataURL（供后端 API 使用，保证处理与导出保真）
+    getFullResDataUrl() {
+        const off = document.createElement('canvas');
+        off.width = this.originalImage.width;
+        off.height = this.originalImage.height;
+        off.getContext('2d').drawImage(this.originalImage, 0, 0);
+        return off.toDataURL('image/png');
+    }
+
+    // CSS 显示坐标 → 全分辨率 的缩放系数（含缩放控件 transform）
+    getFullResFactor() {
+        const rect = this.canvas.getBoundingClientRect();
+        if (rect.width > 0) return this.originalImage.width / rect.width;
+        return 1;
+    }
+
+    // 本地处理：在全分辨率离屏画布上用 Telea 算法修复，导出保持原清晰度
     processLocal(processor, currentTab) {
-        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        const off = document.createElement('canvas');
+        off.width = this.originalImage.width;
+        off.height = this.originalImage.height;
+        const octx = off.getContext('2d');
+        octx.drawImage(this.originalImage, 0, 0);
+        const offData = octx.getImageData(0, 0, off.width, off.height);
+
+        const W = off.width, H = off.height;
+        const factor = this.getFullResFactor();
 
         if (currentTab === 'manual' && this.brushStrokes.length > 0) {
-            const bounds = processor.getBrushBounds(this.brushStrokes);
-            if (bounds) {
-                processor.inpaintWeighted(imageData.data, this.canvas.width, this.canvas.height, bounds);
-            }
+            const mask = processor.buildMaskFromStrokes(W, H, this.brushStrokes, factor);
+            processor.inpaintTelea(offData.data, W, H, mask, 5);
         } else {
-            const startX = Math.floor(this.canvas.width * 0.65);
-            const startY = Math.floor(this.canvas.height * 0.75);
-            const w = Math.floor(this.canvas.width * 0.3);
-            const h = Math.floor(this.canvas.height * 0.2);
-            processor.inpaintWeighted(imageData.data, this.canvas.width, this.canvas.height, { x: startX, y: startY, w, h });
+            // 自动模式：默认右下角区域（与后端 REGION_CONFIGS 对齐）
+            const startX = Math.floor(W * 0.65);
+            const startY = Math.floor(H * 0.75);
+            const w = Math.floor(W * 0.30);
+            const h = Math.floor(H * 0.20);
+            const mask = new Uint8Array(W * H);
+            for (let y = startY; y < startY + h && y < H; y++) {
+                for (let x = startX; x < startX + w && x < W; x++) {
+                    mask[y * W + x] = 255;
+                }
+            }
+            processor.inpaintTelea(offData.data, W, H, mask, 5);
         }
 
-        this.ctx.putImageData(imageData, 0, 0);
+        octx.putImageData(offData, 0, 0);
+        this.fullResResult = off; // 供下载使用（全分辨率）
+
+        // 显示：缩放到显示画布
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.drawImage(off, 0, 0, this.canvas.width, this.canvas.height);
+        this.processedImageData = off.toDataURL('image/png');
+    }
+
+    // 本地一键去背景：全分辨率离屏画布 + 区域生长算法（无后端时的降级方案）
+    processLocalBackground(processor, opts) {
+        const off = document.createElement('canvas');
+        off.width = this.originalImage.width;
+        off.height = this.originalImage.height;
+        const octx = off.getContext('2d');
+        octx.drawImage(this.originalImage, 0, 0);
+        const offData = octx.getImageData(0, 0, off.width, off.height);
+
+        processor.removeBackground(offData.data, off.width, off.height, opts || {});
+
+        octx.putImageData(offData, 0, 0);
+        this.fullResResult = off; // 含 alpha，供下载（保真）
+
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.drawImage(off, 0, 0, this.canvas.width, this.canvas.height);
+        this.processedImageData = off.toDataURL('image/png');
+    }
+
+    // 棋盘格背景：透明区域可视化（去背景模式开启）
+    setBgMode(on) {
+        const wrapper = this.canvas.parentElement;
+        if (wrapper) wrapper.classList.toggle('bg-mode', !!on);
     }
 }

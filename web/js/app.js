@@ -7,6 +7,8 @@ class WatermarkRemoverApp {
         this.selectedRegion = 'bottom-right';
         this.isProcessing = false;
         this.isShowingOriginal = false;
+        this.bgFeather = 2;
+        this.bgMode = 'keep';
 
         this.api = new ApiClient();
         this.processor = ImageProcessor;
@@ -47,6 +49,11 @@ class WatermarkRemoverApp {
             tabBtns: document.querySelectorAll('.tab-btn'),
             autoTab: document.getElementById('autoTab'),
             manualTab: document.getElementById('manualTab'),
+            bgTab: document.getElementById('bgTab'),
+            bgFeather: document.getElementById('bgFeather'),
+            bgFeatherValue: document.getElementById('bgFeatherValue'),
+            keepModeBtn: document.getElementById('keepModeBtn'),
+            removeModeBtn: document.getElementById('removeModeBtn'),
 
             brushSize: document.getElementById('brushSize'),
             brushSizeValue: document.getElementById('brushSizeValue'),
@@ -95,8 +102,7 @@ class WatermarkRemoverApp {
 
         // 标签页
         el.tabBtns.forEach(btn => btn.addEventListener('click', () => {
-            this.currentTab = btn.dataset.tab;
-            this.ui.switchTab(this.currentTab, el.tabBtns, el.autoTab, el.manualTab);
+            this.switchTab(btn.dataset.tab);
         }));
 
         // 区域选择
@@ -126,6 +132,15 @@ class WatermarkRemoverApp {
             this.editor.currentTool = 'eraser';
             this.ui.switchTool('eraser', el.markTool, el.eraserTool);
         });
+
+        // 去背景：边缘羽化滑块
+        el.bgFeather.addEventListener('input', (e) => {
+            this.bgFeather = parseInt(e.target.value);
+            el.bgFeatherValue.textContent = `${this.bgFeather}px`;
+        });
+        // 去背景：保留/删除主体切换
+        el.keepModeBtn.addEventListener('click', () => this.setBgMode('keep'));
+        el.removeModeBtn.addEventListener('click', () => this.setBgMode('remove'));
 
         // Canvas
         el.canvas.addEventListener('mousedown', (e) => { if (this.currentTab === 'manual') this.editor.handleMouseDown(e); });
@@ -163,6 +178,28 @@ class WatermarkRemoverApp {
     updateHistoryButtons() {
         this.elements.undoBtn.disabled = !this.editor.canUndo();
         this.elements.redoBtn.disabled = !this.editor.canRedo();
+    }
+
+    // 切换编辑标签页（auto / manual / bg），并同步界面与画布状态
+    switchTab(tab) {
+        this.currentTab = tab;
+        this.ui.switchTab(tab, this.elements.tabBtns, this.elements.autoTab, this.elements.manualTab, this.elements.bgTab);
+
+        const isBg = tab === 'bg';
+        this.editor.setBgMode(isBg);
+        // 去背景模式下，画布用于透明预览；离开时关闭棋盘格
+        if (isBg) {
+            this.elements.processBtn.querySelector('span').textContent = '一键去背景';
+            this.editor.clearBrushStrokes();
+        } else {
+            this.elements.processBtn.querySelector('span').textContent = '开始去水印';
+        }
+    }
+
+    // 设置去背景模式：保留主体（透明）/ 删除主体（修复背景）
+    setBgMode(mode) {
+        this.bgMode = mode;
+        this.ui.switchBgMode(mode, this.elements.keepModeBtn, this.elements.removeModeBtn);
     }
 
     handleFileSelect(e) {
@@ -231,7 +268,9 @@ class WatermarkRemoverApp {
         try {
             const imageData = this.editor.getImageDataUrl();
 
-            if (this.currentTab === 'manual' && this.editor.brushStrokes.length > 0) {
+            if (this.currentTab === 'bg') {
+                await this.processBackground(imageData);
+            } else if (this.currentTab === 'manual' && this.editor.brushStrokes.length > 0) {
                 await this.processManual(imageData);
             } else {
                 await this.processAuto(imageData);
@@ -256,7 +295,9 @@ class WatermarkRemoverApp {
 
     async processAuto(imageData) {
         try {
-            const data = await this.api.processAuto(imageData, this.selectedRegion);
+            // 发送全分辨率原图，保证后端处理与导出保真
+            const fullImg = this.editor.originalImage ? this.editor.getFullResDataUrl() : imageData;
+            const data = await this.api.processAuto(fullImg, this.selectedRegion);
             if (data && data.success && data.image) {
                 this.editor.loadProcessedImage(data.image);
                 return;
@@ -268,9 +309,14 @@ class WatermarkRemoverApp {
     }
 
     async processManual(imageData) {
-        const maskData = this.processor.generateMask(this.editor.canvas, this.editor.brushStrokes);
         try {
-            const data = await this.api.processManual(imageData, maskData);
+            const fullImg = this.editor.originalImage ? this.editor.getFullResDataUrl() : imageData;
+            const W = this.editor.originalImage.width;
+            const H = this.editor.originalImage.height;
+            const factor = this.editor.getFullResFactor();
+            const maskArr = this.processor.buildMaskFromStrokes(W, H, this.editor.brushStrokes, factor);
+            const maskData = this.processor.maskArrayToDataUrl(W, H, maskArr);
+            const data = await this.api.processManual(fullImg, maskData);
             if (data && data.success && data.image) {
                 this.editor.loadProcessedImage(data.image);
                 return;
@@ -279,6 +325,22 @@ class WatermarkRemoverApp {
             console.warn('API调用失败，使用本地处理:', e);
         }
         this.editor.processLocal(this.processor, this.currentTab);
+    }
+
+    async processBackground(imageData) {
+        this.editor.downloadName = this.bgMode === 'remove' ? 'removed-subject' : 'removed-bg';
+        try {
+            const fullImg = this.editor.originalImage ? this.editor.getFullResDataUrl() : imageData;
+            const data = await this.api.processBackground(fullImg, { mode: this.bgMode, feather: this.bgFeather });
+            if (data && data.success && data.image) {
+                this.editor.loadProcessedImage(data.image);
+                return;
+            }
+        } catch (e) {
+            console.warn('API调用失败，使用本地处理:', e);
+        }
+        // 降级：纯前端区域生长算法（无后端 / 后端不可用时）
+        this.editor.processLocalBackground(this.processor, { mode: this.bgMode, feather: this.bgFeather });
     }
 }
 

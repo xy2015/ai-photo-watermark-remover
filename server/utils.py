@@ -11,9 +11,16 @@ from config import ALLOWED_EXTENSIONS, EXT_TO_MAGIC
 def image_to_base64(image, format='PNG'):
     """将PIL图片或numpy数组转换为base64字符串"""
     if isinstance(image, np.ndarray):
-        if len(image.shape) == 3 and image.shape[2] == 3:
+        if len(image.shape) == 3 and image.shape[2] == 4:
+            # BGRA（OpenCV）→ RGBA（Pillow），保留 alpha 通道
+            b, g, r, a = cv2.split(image)
+            image = cv2.merge([r, g, b, a])
+            image = Image.fromarray(image)
+        elif len(image.shape) == 3 and image.shape[2] == 3:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = Image.fromarray(image)
+            image = Image.fromarray(image)
+        else:
+            image = Image.fromarray(image)
 
     buffered = io.BytesIO()
     image.save(buffered, format=format)

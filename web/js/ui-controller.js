@@ -34,17 +34,26 @@ class UIController {
 
     // ── 标签页 ────────────────────────────────
 
-    switchTab(tab, tabBtns, autoTab, manualTab) {
+    switchTab(tab, tabBtns, autoTab, manualTab, bgTab) {
         tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
         autoTab.classList.toggle('hidden', tab !== 'auto');
         autoTab.classList.toggle('active', tab === 'auto');
         manualTab.classList.toggle('hidden', tab !== 'manual');
         manualTab.classList.toggle('active', tab === 'manual');
+        if (bgTab) {
+            bgTab.classList.toggle('hidden', tab !== 'bg');
+            bgTab.classList.toggle('active', tab === 'bg');
+        }
     }
 
     switchTool(tool, markBtn, eraserBtn) {
         markBtn.classList.toggle('active', tool === 'mark');
         eraserBtn.classList.toggle('active', tool === 'eraser');
+    }
+
+    switchBgMode(mode, keepBtn, removeBtn) {
+        keepBtn.classList.toggle('active', mode === 'keep');
+        removeBtn.classList.toggle('active', mode === 'remove');
     }
 
     selectRegion(region) {
